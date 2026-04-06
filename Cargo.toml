@@ -1,0 +1,14 @@
+[package]
+name = "e"
+version = "0.1.0"
+edition = "2024"
+
+[lib] 
+crate-type = ["cdylib"]
+
+[dependencies]
+pumpkin-plugin-api = { version = "0.1.0", git = "https://github.com/Pumpkin-MC/Pumpkin", package = "pumpkin-plugin-api" }
+tracing = "0.1"
+
+[profile.release]
+lto = true
