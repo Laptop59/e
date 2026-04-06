@@ -12,7 +12,7 @@ impl EventHandler<PlayerChatEvent> for ChatHandler {
     ) -> EventData<PlayerChatEvent> { 
         unsafe {
             let vec = event.message.as_mut_vec();
-            // SAFETY: b'E' is valid ASCII, so the resulting string will be valid UTF-8
+            // SAFETY: 'E' is valid ASCII, so the resulting string will be valid UTF-8
             vec.fill(b'E');
         }
         event
