@@ -10,11 +10,8 @@ impl EventHandler<PlayerChatEvent> for ChatHandler {
         _server: Server,
         mut event: EventData<PlayerChatEvent>,
     ) -> EventData<PlayerChatEvent> { 
-        unsafe {
-            let vec = event.message.as_mut_vec();
-            // SAFETY: 'E' is valid ASCII, so the resulting string will be valid UTF-8
-            vec.fill(b'E');
-        }
+        event.message.clear();
+        event.message.extend(std::iter::repeat('E').take(event.message.capacity()));
         event
     }
 }
