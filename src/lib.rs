@@ -1,39 +1,18 @@
+mod event_handler;
+mod state;
+mod command;
+
 use pumpkin_plugin_api::{
-    Context, Plugin, PluginMetadata, Server, common::NamedColor, events::{EventData, EventHandler, EventPriority, PlayerChatEvent, PlayerJoinEvent}, text::TextComponent
+    Context, Plugin, PluginMetadata, events::EventPriority
 };
 use tracing::*;
-
-struct ChatHandler;
-impl EventHandler<PlayerChatEvent> for ChatHandler {
-    fn handle<'a>(
-        &'a self,
-        _server: Server,
-        mut event: EventData<PlayerChatEvent>,
-    ) -> EventData<PlayerChatEvent> { 
-        event.message.clear();
-        event.message.extend(std::iter::repeat('E').take(event.message.capacity()));
-        event
-    }
-}
-
-struct JoinHandler;
-impl EventHandler<PlayerJoinEvent> for JoinHandler {
-    fn handle<'a>(
-        &'a self,
-        _server: Server,
-        event: EventData<PlayerJoinEvent>,
-    ) -> EventData<PlayerJoinEvent> { 
-        let component = TextComponent::text("E");
-        component.color_named(NamedColor::Gold);
-        component.bold(true);
-
-        event.player.show_title(component).expect("E");
-        event.player.send_title_animation(0, 1000000000, 10).expect("E");
-        event
-    }
-}
+use crate::command::register_command;
+use crate::event_handler::chat::ChatHandler;
+use crate::event_handler::join::JoinHandler;
+use crate::state::EState;
 
 struct EPlugin;
+
 impl Plugin for EPlugin {
     fn new() -> Self {
         EPlugin
@@ -41,7 +20,7 @@ impl Plugin for EPlugin {
 
     fn metadata(&self) -> PluginMetadata {
         PluginMetadata {
-            name: "E".into(),
+            name: "e".into(),
             version: env!("CARGO_PKG_VERSION").into(),
             authors: vec!["Laptop59".into()],
             description: "A simple E plugin! EEEEE".into(),
@@ -50,13 +29,21 @@ impl Plugin for EPlugin {
 
     fn on_load(&mut self, context: Context) -> pumpkin_plugin_api::Result<()> {
         info!("Hello E!");
+
         context.register_event_handler(ChatHandler, EventPriority::Highest, true)?;
         context.register_event_handler(JoinHandler, EventPriority::Highest, true)?;
+        register_command(&context)?;
+
+        EState::load_from_disk(&context);
+
         Ok(())
     }
 
-    fn on_unload(&mut self, _context: Context) -> pumpkin_plugin_api::Result<()> {
+    fn on_unload(&mut self, context: Context) -> pumpkin_plugin_api::Result<()> {
         info!("Goodbye E!");
+
+        EState::save_to_disk(&context);
+
         Ok(())
     }
 }
